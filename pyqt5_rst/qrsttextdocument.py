@@ -5,12 +5,16 @@
 # pylint: disable=invalid-name
 
 from docutils.frontend import get_default_settings as docutils_get_default_settings
+from docutils.io import StringOutput as RstStringOutput
 from docutils.parsers.rst import Parser as RstParser
 from docutils.utils import new_document as new_rst_document
+
+from rst2rst import Writer as RstWriter
 
 from PyQt5.QtGui import QTextDocument
 
 from .doctree2qt import Doctree2Qt
+from .qt2doctree import Qt2Doctree
 
 
 class QRstTextDocument(QTextDocument):
@@ -24,4 +28,8 @@ class QRstTextDocument(QTextDocument):
         doctree.walkabout(Doctree2Qt(doctree, self))
 
     def toReStructuredText(self) -> str:
-        return ""
+        doctree = Qt2Doctree().convert(self)
+        # We shouldn't *have* to set the encoding, but we do.
+        rst_string = RstStringOutput(encoding='unicode')
+        RstWriter().write(doctree, rst_string)
+        return rst_string.destination
