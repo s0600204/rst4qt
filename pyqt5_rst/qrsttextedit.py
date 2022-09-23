@@ -10,6 +10,10 @@ from .qrsttextdocument import QRstTextDocument
 
 
 class QRstTextEdit(QTextEdit):
+    """
+    QRstTextEdit is functionally identical to QTextEdit, but with the added ability
+    to get and set the textual content as reStructuredText.
+    """
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -17,6 +21,7 @@ class QRstTextEdit(QTextEdit):
 
     @property
     def reStructuredText(self) -> str:
+        """This property provides a reStructuredText interface to the text of the text edit."""
         return self.document().toReStructuredText()
 
     @reStructuredText.setter
@@ -24,7 +29,15 @@ class QRstTextEdit(QTextEdit):
         self.document().setReStructuredText(text)
 
     def setReStructuredText(self, text: str):
+        """
+        Changes the text of the text edit.
+
+        Any previous text is removed and the undo/redo history is cleared.
+
+        The input is interpreted as rich text in reStructuredText format.
+        """
         self.document().setReStructuredText(text)
 
     def toReStructuredText(self) -> str:
+        """Returns the text of the text edit as reStructuredText."""
         return self.document().toReStructuredText()

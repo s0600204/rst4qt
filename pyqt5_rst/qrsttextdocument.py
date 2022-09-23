@@ -18,8 +18,20 @@ from .qt2doctree import Qt2Doctree
 
 
 class QRstTextDocument(QTextDocument):
+    """
+    QRstTextDocument is functionally identical to QTextDocument, but with the
+    added ability to get and set the textual content as reStructuredText.
+
+    See the project's README for the scope of feature compatibility.
+    """
 
     def setReStructuredText(self, text: str):
+        """
+        Replaces the entire contents of the document with the given
+        reStructuredText-formatted text.
+
+        The undo/redo history is reset when this function is called.
+        """
         self.clear()
         self.clearUndoRedoStacks()
 
@@ -29,6 +41,7 @@ class QRstTextDocument(QTextDocument):
         doctree.walkabout(Doctree2Qt(doctree, self))
 
     def toReStructuredText(self) -> str:
+        """Returns a string containing a reStructuredText representation of the document."""
         doctree = Qt2Doctree().convert(self)
         # We shouldn't *have* to set the encoding, but we do.
         rst_string = RstStringOutput(encoding='unicode')
