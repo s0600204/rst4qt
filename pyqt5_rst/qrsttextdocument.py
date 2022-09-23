@@ -4,7 +4,7 @@
 #   files/folders/modules differently, but that is not possible (currently).
 # pylint: disable=invalid-name
 
-from docutils.frontend import get_default_settings as docutils_get_default_settings
+from docutils.frontend import OptionParser as RstOptionParser
 from docutils.io import StringOutput as RstStringOutput
 from docutils.parsers.rst import Parser as RstParser
 from docutils.utils import new_document as new_rst_document
@@ -23,7 +23,8 @@ class QRstTextDocument(QTextDocument):
         self.clear()
         self.clearUndoRedoStacks()
 
-        doctree = new_rst_document("<string>", docutils_get_default_settings(RstParser))
+        settings = RstOptionParser(components=(RstParser, )).get_default_values()
+        doctree = new_rst_document("<string>", settings)
         RstParser().parse(text, doctree)
         doctree.walkabout(Doctree2Qt(doctree, self))
 
