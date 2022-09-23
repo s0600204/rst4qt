@@ -109,4 +109,4 @@ class Doctree2Qt(GenericNodeVisitor):
         char_format.setFontStrikeOut(self._flags['strike'])
         char_format.setFontUnderline(self._flags['underline'])
         char_format.setFontWeight(self.BoldWeight if self._flags['bold'] else self.NormalWeight)
-        self._cursor.insertText(node.astext(), char_format)
+        self._cursor.insertText(node.astext().replace('\n', ' '), char_format)
