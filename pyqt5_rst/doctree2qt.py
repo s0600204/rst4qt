@@ -26,13 +26,10 @@ class Doctree2Qt(GenericNodeVisitor):
 
         self._qt5_document = qt5_document
         self._cursor = QTextCursor(qt5_document)
+        self._char_format = QTextCharFormat()
 
         self._flags = {
-            'bold': False,
             'definition': False,
-            'italic': False,
-            'strike': False,
-            'underline': False,
         }
         self._section_level = 0
 
@@ -58,24 +55,24 @@ class Doctree2Qt(GenericNodeVisitor):
         self._cursor.deletePreviousChar()
 
     def visit_emphasis(self, _):
-        self._flags['italic'] = True
+        self._char_format.setFontItalic(True)
 
     def depart_emphasis(self, _):
-        self._flags['italic'] = False
+        self._char_format.setFontItalic(False)
 
     def visit_inline(self, node):
         classes = node.get('classes', [])
         if 'strike' in classes:
-            self._flags['strike'] = True
+            self._char_format.setFontStrikeOut(True)
         if 'underline' in classes:
-            self._flags['under'] = True
+            self._char_format.setFontUnderline(True)
 
     def depart_inline(self, node):
         classes = node.get('classes', [])
         if 'strike' in classes:
-            self._flags['strike'] = False
+            self._char_format.setFontStrikeOut(False)
         if 'underline' in classes:
-            self._flags['under'] = False
+            self._char_format.setFontUnderline(False)
 
     def visit_paragraph(self, _):
         block_format = QTextBlockFormat()
@@ -90,10 +87,10 @@ class Doctree2Qt(GenericNodeVisitor):
         self._section_level -= 1
 
     def visit_strong(self, _):
-        self._flags['bold'] = True
+        self._char_format.setFontWeight(self.BoldWeight)
 
     def depart_strong(self, _):
-        self._flags['bold'] = False
+        self._char_format.setFontWeight(self.NormalWeight)
 
     def visit_term(self, _):
         self._cursor.insertBlock()
@@ -104,9 +101,4 @@ class Doctree2Qt(GenericNodeVisitor):
         self._cursor.insertBlock(block_format)
 
     def visit_Text(self, node):
-        char_format = QTextCharFormat()
-        char_format.setFontItalic(self._flags['italic'])
-        char_format.setFontStrikeOut(self._flags['strike'])
-        char_format.setFontUnderline(self._flags['underline'])
-        char_format.setFontWeight(self.BoldWeight if self._flags['bold'] else self.NormalWeight)
-        self._cursor.insertText(node.astext().replace('\n', ' '), char_format)
+        self._cursor.insertText(node.astext().replace('\n', ' '), self._char_format)
