@@ -5,6 +5,7 @@
 from docutils.nodes import GenericNodeVisitor
 
 from PyQt5.QtGui import (
+    QFont,
     QTextBlockFormat,
     QTextCharFormat,
     QTextCursor,
@@ -12,8 +13,6 @@ from PyQt5.QtGui import (
 
 class Doctree2Qt(GenericNodeVisitor):
 
-    BoldWeight = 75
-    NormalWeight = 50
     HeadingSizeMagic = 4
 
     NoOpTags = (
@@ -88,10 +87,10 @@ class Doctree2Qt(GenericNodeVisitor):
         self._section_level -= 1
 
     def visit_strong(self, _):
-        self._char_format.setFontWeight(self.BoldWeight)
+        self._char_format.setFontWeight(QFont.Bold)
 
     def depart_strong(self, _):
-        self._char_format.setFontWeight(self.NormalWeight)
+        self._char_format.setFontWeight(QFont.Normal)
 
     def visit_term(self, _):
         self._cursor.insertBlock()

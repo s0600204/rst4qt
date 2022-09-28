@@ -5,10 +5,9 @@ from docutils import (
     utils,
 )
 
-class Qt2Doctree:
+from PyQt5.QtGui import QFont
 
-    BoldWeight = 75
-    NormalWeight = 50
+class Qt2Doctree:
 
     def __init__(self):
 
@@ -139,7 +138,7 @@ class Qt2Doctree:
         if text_format.fontUnderline():
             return nodes.inline(text=text_segment, classes=['under'])
 
-        if text_format.fontWeight() == self.BoldWeight:
+        if text_format.fontWeight() == QFont.Bold:
             return nodes.strong(text=text_segment)
 
         return nodes.Text(text_segment)
