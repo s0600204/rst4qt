@@ -14,6 +14,7 @@ class Doctree2Qt(GenericNodeVisitor):
 
     BoldWeight = 75
     NormalWeight = 50
+    HeadingSizeMagic = 4
 
     NoOpTags = (
         'definition_list',
@@ -98,7 +99,15 @@ class Doctree2Qt(GenericNodeVisitor):
     def visit_title(self, _):
         block_format = QTextBlockFormat()
         block_format.setHeadingLevel(self._section_level)
+
+        self._char_format.setProperty(
+            QTextCharFormat.FontSizeAdjustment,
+            self.HeadingSizeMagic - self._section_level)
+
         self._cursor.insertBlock(block_format)
+
+    def depart_title(self, _):
+        self._char_format = QTextCharFormat()
 
     def visit_Text(self, node):
         self._cursor.insertText(node.astext().replace('\n', ' '), self._char_format)
