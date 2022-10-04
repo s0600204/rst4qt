@@ -30,11 +30,6 @@ class Qt2Doctree:
                 # This block is a section header
                 self.append_header(block)
 
-            elif block.next().blockFormat().indent():
-                # This block is the start of a definition list
-                block = self.append_definition_list(block)
-                continue
-
             else:
                 paragraph = nodes.paragraph()
                 self.append_text_to_node(paragraph, block)
@@ -43,61 +38,6 @@ class Qt2Doctree:
             block = block.next()
 
         return doctree
-
-    def append_definition_list(self, block):
-
-        def new_definition(definition_list, block):
-            item = nodes.definition_list_item()
-            term = nodes.term()
-            self.append_text_to_node(term, block)
-            definition = nodes.definition()
-
-            item.append(term)
-            item.append(definition)
-            definition_list.append(item)
-            return definition
-
-        definition_list = nodes.definition_list()
-        self._section_stack[-1].append(definition_list)
-
-        definition = new_definition(definition_list, block)
-        self._list_stack.append(['definition', [definition_list, definition]])
-
-        block = block.next()
-        while block.isValid():
-            list_indent = len(self._list_stack)
-
-            this_block_indent = block.blockFormat().indent()
-            next_block_indent = block.next().blockFormat().indent()
-
-            if this_block_indent == list_indent:
-                if next_block_indent > this_block_indent:
-                    # Nested definition list
-                    # @todo
-                    pass
-
-                else:
-                    # Definition continues
-                    paragraph = nodes.paragraph()
-                    self.append_text_to_node(paragraph, block)
-                    self._list_stack[-1][1][1].append(paragraph)
-
-            elif this_block_indent < list_indent:
-                # end of this definition
-
-                if next_block_indent == list_indent:
-                    # list continues, new term
-                    definition = new_definition(self._list_stack[-1][1][0], block)
-                    self._list_stack[-1][1][1] = definition
-
-                else:
-                    # list ends
-                    self._list_stack.pop()
-                    return block
-
-            block = block.next()
-
-        return block
 
     def append_header(self, block):
 

@@ -16,8 +16,6 @@ class Doctree2Qt(GenericNodeVisitor):
     HeadingSizeMagic = 4
 
     NoOpTags = (
-        'definition_list',
-        'definition_list_item',
         'document',
     )
 
@@ -29,7 +27,6 @@ class Doctree2Qt(GenericNodeVisitor):
         self._char_format = QTextCharFormat()
 
         self._flags = {
-            'definition': False,
         }
         self._section_level = 0
 
@@ -40,12 +37,6 @@ class Doctree2Qt(GenericNodeVisitor):
 
     def default_departure(self, _):
         pass
-
-    def visit_definition(self, _):
-        self._flags['definition'] = True
-
-    def depart_definition(self, _):
-        self._flags['definition'] = False
 
     def depart_document(self, _):
         # Remove empty block at top of created document.
@@ -76,8 +67,6 @@ class Doctree2Qt(GenericNodeVisitor):
 
     def visit_paragraph(self, _):
         block_format = QTextBlockFormat()
-        if self._flags['definition']:
-            block_format.setIndent(1)
         self._cursor.insertBlock(block_format)
 
     def visit_section(self, _):
