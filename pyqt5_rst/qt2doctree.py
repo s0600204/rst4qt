@@ -45,12 +45,15 @@ class Qt2Doctree:
 
             if level > 0:
                 # This block is a section header
-                self.append_header(block)
+                node_text_target = self.append_header(block)
 
             else:
-                paragraph = nodes.paragraph()
-                self.append_text_to_node(paragraph, block)
-                self._section_stack[-1].append(paragraph)
+                node_text_target = nodes.paragraph()
+
+            self.append_text_to_node(node_text_target, block)
+            if node_text_target.children:
+                # Don't append an empty node
+                self._section_stack[-1].append(node_text_target)
 
             block = block.next()
 
@@ -72,9 +75,7 @@ class Qt2Doctree:
         self._section_stack.append(new_section)
         self._section_level_stack.append(header_level)
 
-        title = nodes.title()
-        self.append_text_to_node(title, block)
-        self._section_stack[-1].append(title)
+        return nodes.title()
 
     def append_text_to_node(self, node, block):
         text = block.text()
