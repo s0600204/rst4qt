@@ -29,6 +29,7 @@ class Doctree2Qt(GenericNodeVisitor):
         self._flags = {
         }
         self._section_level = 0
+        self._indentation_level = 0
 
     def default_visit(self, node):
         if node.tagname in self.NoOpTags:
@@ -37,6 +38,12 @@ class Doctree2Qt(GenericNodeVisitor):
 
     def default_departure(self, _):
         pass
+
+    def visit_block_quote(self, _):
+        self._indentation_level += 1
+
+    def depart_block_quote(self, _):
+        self._indentation_level -= 1
 
     def depart_document(self, _):
         # Remove empty block at top of created document.
@@ -67,6 +74,7 @@ class Doctree2Qt(GenericNodeVisitor):
 
     def visit_paragraph(self, _):
         block_format = QTextBlockFormat()
+        block_format.setIndent(self._indentation_level)
         self._cursor.insertBlock(block_format)
 
     def visit_section(self, _):

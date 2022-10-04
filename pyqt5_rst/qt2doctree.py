@@ -19,6 +19,9 @@ class Qt2Doctree:
     def convert(self, qt5_document):
         doctree = utils.new_document("", frontend.get_default_settings())
 
+        # In Qt5, it's possible to indent more than once.
+        indentation_stack = [0]
+
         self._section_stack = [doctree]
         self._section_level_stack = [0]
 
@@ -26,6 +29,20 @@ class Qt2Doctree:
         while block.isValid():
             block_format = block.blockFormat()
             level = block_format.headingLevel()
+            block_indent = block.blockFormat().indent()
+
+            if block_indent > indentation_stack[-1]:
+                # This is either a block quote or a literal block
+                block_quote = nodes.block_quote()
+                self._section_stack[-1].append(block_quote)
+                self._section_stack.append(block_quote)
+                indentation_stack.append(block_indent)
+                continue
+
+            while block_indent < indentation_stack[-1]:
+                self._section_stack.pop()
+                indentation_stack.pop()
+
             if level > 0:
                 # This block is a section header
                 self.append_header(block)
