@@ -6,6 +6,7 @@ from docutils.nodes import GenericNodeVisitor
 
 from PyQt5.QtGui import (
     QFont,
+    QFontDatabase,
     QTextBlockFormat,
     QTextCharFormat,
     QTextCursor,
@@ -25,6 +26,8 @@ class Doctree2Qt(GenericNodeVisitor):
         self._qt5_document = qt5_document
         self._cursor = QTextCursor(qt5_document)
         self._char_format = QTextCharFormat()
+
+        self._mono_font = QFontDatabase.systemFont(QFontDatabase.FixedFont)
 
         self._flags = {
         }
@@ -71,6 +74,19 @@ class Doctree2Qt(GenericNodeVisitor):
             self._char_format.setFontStrikeOut(False)
         if 'underline' in classes:
             self._char_format.setFontUnderline(False)
+
+    def visit_literal_block(self, node):
+        self._indentation_level += 1
+        self._char_format.setFont(self._mono_font)
+
+        # Create the indented block
+        self.visit_paragraph(node)
+
+    def depart_literal_block(self, _):
+        self._indentation_level -= 1
+        # Formatting (italics etc.) isn't preserved through a literal block,
+        # and rst doesn't support text sizing, so this should be ok?
+        self._char_format = QTextCharFormat()
 
     def visit_paragraph(self, _):
         block_format = QTextBlockFormat()

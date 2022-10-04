@@ -33,22 +33,28 @@ class Qt2Doctree:
 
             if block_indent > indentation_stack[-1]:
                 # This is either a block quote or a literal block
-                block_quote = nodes.block_quote()
-                self._section_stack[-1].append(block_quote)
-                self._section_stack.append(block_quote)
-                indentation_stack.append(block_indent)
-                continue
+                format_list = block.textFormats()
+                if len(format_list) > 1 or not format_list[0].format.font().family() == 'monospace':
+                    block_quote = nodes.block_quote()
+                    self._section_stack[-1].append(block_quote)
+                    self._section_stack.append(block_quote)
+                    indentation_stack.append(block_indent)
+                    continue
 
-            while block_indent < indentation_stack[-1]:
-                self._section_stack.pop()
-                indentation_stack.pop()
-
-            if level > 0:
-                # This block is a section header
-                node_text_target = self.append_header(block)
+                node_text_target = nodes.literal_block()
 
             else:
-                node_text_target = nodes.paragraph()
+
+                while block_indent < indentation_stack[-1]:
+                    self._section_stack.pop()
+                    indentation_stack.pop()
+
+                if level > 0:
+                    # This block is a section header
+                    node_text_target = self.append_header(block)
+
+                else:
+                    node_text_target = nodes.paragraph()
 
             self.append_text_to_node(node_text_target, block)
             if node_text_target.children:
