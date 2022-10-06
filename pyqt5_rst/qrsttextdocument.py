@@ -7,7 +7,8 @@
 from docutils.frontend import OptionParser as RstOptionParser
 from docutils.io import StringOutput as RstStringOutput
 from docutils.parsers.rst import Parser as RstParser
-from docutils.utils import new_document as new_rst_document
+from docutils.nodes import document as docutils_doctree
+from docutils.utils import new_document as new_docutils_doctree
 
 from rst2rst import Writer as RstWriter
 
@@ -36,14 +37,17 @@ class QRstTextDocument(QTextDocument):
         self.clearUndoRedoStacks()
 
         settings = RstOptionParser(components=(RstParser, )).get_default_values()
-        doctree = new_rst_document("<string>", settings)
+        doctree = new_docutils_doctree("<string>", settings)
         RstParser().parse(text, doctree)
         doctree.walkabout(Doctree2Qt(doctree, self))
 
+    def toDocutilsDoctree(self) -> docutils_doctree:
+        """Returns a docutils doctree representation of the document."""
+        return Qt2Doctree().convert(self)
+
     def toReStructuredText(self) -> str:
         """Returns a string containing a reStructuredText representation of the document."""
-        doctree = Qt2Doctree().convert(self)
         # We shouldn't *have* to set the encoding, but we do.
         rst_string = RstStringOutput(encoding='unicode')
-        RstWriter().write(doctree, rst_string)
+        RstWriter().write(self.toDocutilsDoctree(), rst_string)
         return rst_string.destination
