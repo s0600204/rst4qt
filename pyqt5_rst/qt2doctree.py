@@ -30,6 +30,7 @@ class Qt2Doctree:
             block_format = block.blockFormat()
             level = block_format.headingLevel()
             block_indent = block.blockFormat().indent()
+            disable_node_text_target_append = False
 
             if block_indent > indentation_stack[-1]:
                 # This is either a block quote or a literal block
@@ -41,7 +42,14 @@ class Qt2Doctree:
                     indentation_stack.append(block_indent)
                     continue
 
-                node_text_target = nodes.literal_block()
+                if isinstance(self._section_stack[-1][-1], nodes.literal_block):
+                    # Continuation of a literal block
+                    node_text_target = self._section_stack[-1][-1]
+                    indent = '  ' * (block_indent - 1)
+                    node_text_target.append(nodes.Text('\n%s' % indent))
+                    disable_node_text_target_append = True
+                else:
+                    node_text_target = nodes.literal_block()
 
             else:
 
@@ -57,7 +65,7 @@ class Qt2Doctree:
                     node_text_target = nodes.paragraph()
 
             self.append_text_to_node(node_text_target, block)
-            if node_text_target.children:
+            if node_text_target.children and not disable_node_text_target_append:
                 # Don't append an empty node
                 self._section_stack[-1].append(node_text_target)
 

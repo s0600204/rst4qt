@@ -2,7 +2,10 @@
 # @see comment in .pylintrc for reason
 # pylint: disable=invalid-name
 
-from docutils.nodes import GenericNodeVisitor
+from docutils.nodes import (
+    GenericNodeVisitor,
+    SkipNode,
+)
 
 from PyQt5.QtGui import (
     QFont,
@@ -26,8 +29,10 @@ class Doctree2Qt(GenericNodeVisitor):
         self._qt5_document = qt5_document
         self._cursor = QTextCursor(qt5_document)
         self._char_format = QTextCharFormat()
+        self._char_format_mono = QTextCharFormat()
 
         self._mono_font = QFontDatabase.systemFont(QFontDatabase.FixedFont)
+        self._char_format_mono.setFont(self._mono_font)
 
         self._flags = {
         }
@@ -77,16 +82,12 @@ class Doctree2Qt(GenericNodeVisitor):
 
     def visit_literal_block(self, node):
         self._indentation_level += 1
-        self._char_format.setFont(self._mono_font)
-
-        # Create the indented block
+        # Create an indented block
         self.visit_paragraph(node)
 
-    def depart_literal_block(self, _):
+        self._cursor.insertText(node.astext(), self._char_format_mono)
         self._indentation_level -= 1
-        # Formatting (italics etc.) isn't preserved through a literal block,
-        # and rst doesn't support text sizing, so this should be ok?
-        self._char_format = QTextCharFormat()
+        raise SkipNode
 
     def visit_paragraph(self, _):
         block_format = QTextBlockFormat()
