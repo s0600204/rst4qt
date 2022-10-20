@@ -29,7 +29,10 @@ class Qt2Doctree:
 
     @property
     def current_node(self):
-        return self._section_stack[-1][-1]
+        try:
+            return self._section_stack[-1][-1]
+        except IndexError:
+            return None
 
     @property
     def current_section(self):
