@@ -87,14 +87,12 @@ class Qt2Doctree:
         self.append_node(nodes.title())
 
     def build_literal_block(self, block):
-        current_node = self.current_node
-        if isinstance(current_node, nodes.literal_block):
-            # Continuation of a literal block
-            block_indent = block.blockFormat().indent()
-            indent = '  ' * (block_indent - 1)
-            self.append_text('\n%s' % indent)
-        else:
-            self.append_node(nodes.literal_block())
+        self.append_node(nodes.literal_block())
+
+    def continue_literal_block(self, block):
+        block_indent = block.blockFormat().indent()
+        indent = '  ' * (block_indent - 1)
+        self.append_text('\n%s' % indent)
 
     def convert(self, qt5_document):
         doctree = utils.new_document("", frontend.get_default_settings())
@@ -112,7 +110,9 @@ class Qt2Doctree:
                 if block_indent > self._indentation_stack[-1]:
                     # This is either a block quote or a literal block
                     format_list = block.textFormats()
-                    if len(format_list) == 1 and format_list[0].format.font().family() == 'monospace':
+                    if isinstance(self.current_node, nodes.literal_block):
+                        self.continue_literal_block(block)
+                    elif len(format_list) == 1 and format_list[0].format.font().family() == 'monospace':
                         self.build_literal_block(block)
                     else:
                         self.build_block_quote(block)
