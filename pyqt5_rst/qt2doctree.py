@@ -35,8 +35,16 @@ class Qt2Doctree:
             return None
 
     @property
+    def current_node_is_literal(self):
+        return isinstance(self.current_node, nodes.literal_block)
+
+    @property
     def current_section(self):
         return self._section_stack[-1]
+
+    @property
+    def current_section_is_quote(self):
+        return isinstance(self.current_section, nodes.block_quote)
 
     def append_node(self, node):
         self.current_section.append(node)
@@ -45,6 +53,9 @@ class Qt2Doctree:
         self._section_stack.append(node)
 
     def append_text(self, text, text_format=None):
+        if not self.current_node:
+            return
+
         if text_format:
             text_node = self.format_text_segment(text, text_format)
         else:
@@ -88,11 +99,10 @@ class Qt2Doctree:
 
     def build_literal_block(self, block):
         self.append_node(nodes.literal_block())
+        self._indentation_stack.append(block.blockFormat().indent())
 
     def continue_literal_block(self, block):
-        block_indent = block.blockFormat().indent()
-        indent = '  ' * (block_indent - 1)
-        self.append_text('\n%s' % indent)
+        self.append_text('\n')
 
     def convert(self, qt5_document):
         doctree = utils.new_document("", frontend.get_default_settings())
@@ -105,27 +115,43 @@ class Qt2Doctree:
             block_format = block.blockFormat()
             level = block_format.headingLevel()
             block_indent = block.blockFormat().indent()
+            format_list = block.textFormats()
+            only_monospaced = len(format_list) == 1 and format_list[0].format.font().family() == 'monospace'
+            has_content = bool(block.text())
 
             try:
                 if block_indent > self._indentation_stack[-1]:
                     # This is either a block quote or a literal block
-                    format_list = block.textFormats()
-                    if isinstance(self.current_node, nodes.literal_block):
-                        self.continue_literal_block(block)
-                    elif len(format_list) == 1 and format_list[0].format.font().family() == 'monospace':
+                    if only_monospaced:
                         self.build_literal_block(block)
                     else:
                         self.build_block_quote(block)
 
-                else:
+                elif not has_content:
+                    # Empty line, continue with whatever is active
+                    self.append_text('\n')
+                    raise SkipText
 
+                else:
                     while block_indent < self._indentation_stack[-1]:
-                        self._section_stack.pop()
+                        if self.current_section_is_quote:
+                            self._section_stack.pop()
                         self._indentation_stack.pop()
 
                     if level > 0:
                         # This block is a section header
                         self.build_header(block)
+
+                    elif only_monospaced:
+                        # Literal block following (but not part of) block quote
+                        if self.current_section_is_quote and not self.current_node_is_literal:
+                            self._section_stack.pop()
+                            self._indentation_stack.pop()
+
+                        if self.current_node_is_literal:
+                            self.continue_literal_block(block)
+                        else:
+                            self.build_literal_block(block)
 
                     else:
                         self.append_node(nodes.paragraph())
