@@ -15,6 +15,10 @@ class NextIteration(Exception):
     """Continue with next Iteration."""
 
 
+def is_monospace_formatted(text_format):
+    return text_format.font().family() == 'monospace'
+
+
 class Qt2Doctree:
 
     def __init__(self):
@@ -116,7 +120,7 @@ class Qt2Doctree:
             level = block_format.headingLevel()
             block_indent = block.blockFormat().indent()
             format_list = block.textFormats()
-            only_monospaced = len(format_list) == 1 and format_list[0].format.font().family() == 'monospace'
+            only_monospaced = len(format_list) == 1 and is_monospace_formatted(format_list[0].format)
             has_content = bool(block.text())
 
             try:
@@ -169,6 +173,9 @@ class Qt2Doctree:
         return doctree
 
     def format_text_segment(self, text_segment, text_format):
+
+        if is_monospace_formatted(text_format):
+            return nodes.literal(text=text_segment)
 
         if text_format.fontItalic():
             return nodes.emphasis(text=text_segment)

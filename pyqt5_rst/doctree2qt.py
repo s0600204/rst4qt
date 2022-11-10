@@ -80,6 +80,10 @@ class Doctree2Qt(GenericNodeVisitor):
         if 'underline' in classes:
             self._char_format.setFontUnderline(False)
 
+    def visit_literal(self, node):
+        self._cursor.insertText(node.astext(), self._char_format_mono)
+        raise SkipNode
+
     def visit_literal_block(self, node):
         self._indentation_level += 1
         # Create an indented block
