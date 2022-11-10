@@ -11,8 +11,7 @@ Underlining
 """""""""""
 ::
 
-  .. role:: under
-      :class: underline
+  .. role:: underline
 
 reStructuredText doesn't natively support underlining because, to quote David
 Ascher in his `2000-01-21 Doc-SIG mailing list post`_ "Docstring grammar: a
@@ -32,7 +31,7 @@ very revised proposal":
 His concerns about markup of python variables do not apply to us [#]_, so you may
 indicate text to be underlined like so::
 
-    Normal text :under:`underlined text` normal text
+    Normal text :underline:`underlined text` normal text
 
 
 Strike Through
@@ -40,7 +39,6 @@ Strike Through
 ::
 
   .. role:: strike
-      :class: strikethrough
 
 Referred to Qt5 as "strike out", this delineates where a horizontal line through
 the vertical-middle of text should be drawn; and may be used thusly::

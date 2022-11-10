@@ -177,7 +177,7 @@ class Qt2Doctree:
             return nodes.inline(text=text_segment, classes=['strike'])
 
         if text_format.fontUnderline():
-            return nodes.inline(text=text_segment, classes=['under'])
+            return nodes.inline(text=text_segment, classes=['underline'])
 
         if text_format.fontWeight() == QFont.Bold:
             return nodes.strong(text=text_segment)
