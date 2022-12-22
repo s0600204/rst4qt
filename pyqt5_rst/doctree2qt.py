@@ -20,7 +20,10 @@ class Doctree2Qt(GenericNodeVisitor):
     HeadingSizeMagic = 4
 
     NoOpTags = (
+        'colspec',
         'document',
+        'table',
+        'tbody',
     )
 
     def __init__(self, rst_document, qt5_document):
@@ -39,6 +42,8 @@ class Doctree2Qt(GenericNodeVisitor):
         }
         self._section_level = 0
         self._indentation_level = 0
+
+        self._table_coords = {}
 
     def default_visit(self, node):
         if node.tagname in self.NoOpTags:
@@ -66,6 +71,13 @@ class Doctree2Qt(GenericNodeVisitor):
 
     def depart_emphasis(self, _):
         self._char_format.setFontItalic(False)
+
+    def visit_entry(self, node):
+        self._table_coords['col'] += 1
+        self._cursor = self._cursor.currentTable().cellAt(
+            self._table_coords['row'],
+            self._table_coords['col']
+        ).firstCursorPosition()
 
     def visit_inline(self, node):
         classes = node.get('classes', [])
@@ -99,6 +111,14 @@ class Doctree2Qt(GenericNodeVisitor):
         block_format.setIndent(self._indentation_level)
         self._cursor.insertBlock(block_format)
 
+    def visit_row(self, node):
+        self._table_coords['row'] += 1
+        self._table_coords['col'] = -1
+
+        table = self._cursor.currentTable()
+        if self._table_coords['row'] + 1 > table.rows():
+            table.appendRows(1)
+
     def visit_section(self, _):
         self._section_level += 1
 
@@ -111,8 +131,19 @@ class Doctree2Qt(GenericNodeVisitor):
     def depart_strong(self, _):
         self._char_format.setFontWeight(QFont.Normal)
 
+    def depart_table(self, _):
+        self._cursor.movePosition(QTextCursor.End)
+
     def visit_term(self, _):
         self._cursor.insertBlock()
+
+    def visit_tgroup(self, node):
+        column_count = node['cols']
+        self._cursor.insertTable(1, column_count)
+        self._table_coords = {
+            'row': -1,
+            'col': -1,
+        }
 
     def visit_title(self, _):
         block_format = QTextBlockFormat()
