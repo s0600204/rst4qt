@@ -5,7 +5,7 @@ from docutils import (
     utils,
 )
 
-from PyQt5.QtGui import QFont
+from PyQt5.QtGui import QFont, QTextCursor
 
 
 class SkipText(Exception):
@@ -114,7 +114,9 @@ class Qt2Doctree:
         self._section_stack = [doctree]
         self._section_level_stack = [0]
 
-        block = qt5_document.firstBlock()
+        cursor = qt5_document.rootFrame().firstCursorPosition()
+        last_block = qt5_document.lastBlock()
+        block = cursor.block()
         while block.isValid():
             block_format = block.blockFormat()
             level = block_format.headingLevel()
@@ -168,7 +170,12 @@ class Qt2Doctree:
             except SkipText:
                 pass
 
-            block = block.next()
+            finally:
+                if block == last_block:
+                    break
+
+            cursor.movePosition(QTextCursor.NextBlock)
+            block = cursor.block()
 
         return doctree
 
