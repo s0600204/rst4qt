@@ -88,7 +88,7 @@ class Qt2Doctree:
         # Backtrack up the stack if it's a higher-level header
         header_level = block.blockFormat().headingLevel()
         while header_level <= self._section_level_stack[-1]:
-            self._section_stack.pop()
+            self.pop_section()
             self._section_level_stack.pop()
 
         # @todo: look up how `ids` and `names` should *actually* be created/formed
@@ -141,7 +141,7 @@ class Qt2Doctree:
                 else:
                     while block_indent < self._indentation_stack[-1]:
                         if self.current_section_is_quote:
-                            self._section_stack.pop()
+                            self.pop_section()
                         self._indentation_stack.pop()
 
                     if level > 0:
@@ -151,7 +151,7 @@ class Qt2Doctree:
                     elif only_monospaced:
                         # Literal block following (but not part of) block quote
                         if self.current_section_is_quote and not self.current_node_is_literal:
-                            self._section_stack.pop()
+                            self.pop_section()
                             self._indentation_stack.pop()
 
                         if self.current_node_is_literal:
@@ -197,3 +197,6 @@ class Qt2Doctree:
             return nodes.strong(text=text_segment)
 
         return nodes.Text(text_segment)
+
+    def pop_section(self):
+        self._section_stack.pop()
