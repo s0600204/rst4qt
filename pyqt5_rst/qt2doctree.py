@@ -129,16 +129,17 @@ class Qt2Doctree:
             only_monospaced = len(format_list) == 1 and is_monospace_formatted(format_list[0].format)
             has_content = bool(block.text())
 
-            qt5_table = cursor.currentTable()
-            if qt5_table:
-                if not self._active_table:
-                    self._active_table = TableBuilder(self, qt5_table)
-                self._active_table.update(qt5_table, cursor)
-            elif self._active_table:
-                self._active_table.finalise()
-                self._active_table = None
-
             try:
+                qt5_table = cursor.currentTable()
+                if qt5_table:
+                    if not self._active_table:
+                        self._active_table = TableBuilder(self, qt5_table)
+                    self._active_table.update(qt5_table, cursor)
+                elif self._active_table:
+                    self._active_table.finalise()
+                    self._active_table = None
+                    raise SkipText
+
                 if block_indent > self._indentation_stack[-1]:
                     # This is either a block quote or a literal block
                     if only_monospaced:

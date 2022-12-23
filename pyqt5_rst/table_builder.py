@@ -11,19 +11,17 @@ class TableBuilder:
 
         table = nodes.table() # <table>
         self.append_node(table)
-        self.append_section(table)
 
         tgroup = nodes.tgroup(cols=qt5_table.columns()) # <tgroup>
-        self.append_node(tgroup)
-        self.append_section(tgroup)
+        table.append(tgroup)
 
         for col in range(qt5_table.columns()):
             colspec = nodes.colspec(colwidth=3)
-            self.append_node(colspec)
+            tgroup.append(colspec)
             self._colspecs += [colspec]
 
         tbody = nodes.tbody() # <tbody>
-        self.append_node(tbody)
+        tgroup.append(tbody)
         self.append_section(tbody)
 
     def append_node(self, node):
@@ -35,9 +33,7 @@ class TableBuilder:
     def finalise(self):
         self.pop_section() # </entry>
         self.pop_section() # </row>
-        self.pop_section() # </tbody>
-        self.pop_section() # </tgroup>
-        self.pop_section() # </table>
+        self.pop_section() # </tbody></tgroup></table>
 
     def pop_section(self):
         self._doctree.pop_section()
