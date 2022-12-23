@@ -7,6 +7,8 @@ from docutils import (
 
 from PyQt5.QtGui import QFont, QTextCursor
 
+from .table_builder import TableBuilder
+
 
 class SkipText(Exception):
     """Skip appending a block's text."""
@@ -30,6 +32,8 @@ class Qt2Doctree:
 
         # In Qt5, it's possible to indent more than once.
         self._indentation_stack = [0]
+
+        self._active_table = None
 
     @property
     def current_node(self):
@@ -124,6 +128,15 @@ class Qt2Doctree:
             format_list = block.textFormats()
             only_monospaced = len(format_list) == 1 and is_monospace_formatted(format_list[0].format)
             has_content = bool(block.text())
+
+            qt5_table = cursor.currentTable()
+            if qt5_table:
+                if not self._active_table:
+                    self._active_table = TableBuilder(self, qt5_table)
+                self._active_table.update(qt5_table, cursor)
+            elif self._active_table:
+                self._active_table.finalise()
+                self._active_table = None
 
             try:
                 if block_indent > self._indentation_stack[-1]:
