@@ -7,7 +7,6 @@ class TableBuilder:
     def __init__(self, qt2doctree, qt5_table):
         self._doctree = qt2doctree
         self._current_cell = [-1, -1]
-        self._colspecs = []
 
         table = nodes.table() # <table>
         self.append_node(table)
@@ -16,9 +15,9 @@ class TableBuilder:
         table.append(tgroup)
 
         for col in range(qt5_table.columns()):
-            colspec = nodes.colspec(colwidth=3)
-            tgroup.append(colspec)
-            self._colspecs += [colspec]
+            # No point setting the optional `colwidth` attribute, as that depends
+            # on knowing how the text will be represented in reStructuredText.
+            tgroup.append(nodes.colspec())
 
         tbody = nodes.tbody() # <tbody>
         tgroup.append(tbody)
@@ -42,11 +41,6 @@ class TableBuilder:
         cell = table.cellAt(cursor)
         col = cell.column()
         row = cell.row()
-
-        self._colspecs[col]['colwidth'] = max(
-            self._colspecs[col]['colwidth'],
-            len(cursor.block().text()) + 2
-        )
 
         if row != self._current_cell[0]:
             if self._current_cell[0] != -1:
