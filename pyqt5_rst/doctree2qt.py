@@ -79,6 +79,16 @@ class Doctree2Qt(GenericNodeVisitor):
             self._table_coords['col']
         ).firstCursorPosition()
 
+    def depart_entry(self, node):
+        # Remove empty block from the beginning of the cell that
+        # was auto-created by Qt when the row was initialised.
+        cursor = self._cursor.currentTable().cellAt(
+            self._table_coords['row'],
+            self._table_coords['col']
+        ).firstCursorPosition()
+        cursor.movePosition(QTextCursor.NextBlock)
+        cursor.deletePreviousChar()
+
     def visit_inline(self, node):
         classes = node.get('classes', [])
         if 'strike' in classes:
