@@ -217,4 +217,4 @@ class Qt2Doctree:
             self._indentation_stack.pop()
 
     def pop_section(self):
-        self._section_stack.pop()
+        return self._section_stack.pop()

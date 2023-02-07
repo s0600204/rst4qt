@@ -30,12 +30,13 @@ class TableBuilder:
         self._doctree.append_section(section)
 
     def finalise(self):
-        self.pop_section() # </entry>
+        while not isinstance(self.pop_section(), nodes.entry):
+            pass           # </entry>
         self.pop_section() # </row>
         self.pop_section() # </tbody></tgroup></table>
 
     def pop_section(self):
-        self._doctree.pop_section()
+        return self._doctree.pop_section()
 
     def update(self, table, cursor):
         cell = table.cellAt(cursor)
@@ -44,7 +45,8 @@ class TableBuilder:
 
         if row != self._current_cell[0]:
             if self._current_cell[0] != -1:
-                self.pop_section() # </entry>
+                while not isinstance(self.pop_section(), nodes.entry):
+                    pass           # </entry>
                 self.pop_section() # </row>
 
             self._current_cell[0] = row
@@ -55,7 +57,8 @@ class TableBuilder:
 
         if col != self._current_cell[1]:
             if self._current_cell[1] != -1:
-                self.pop_section() # </entry>
+                while not isinstance(self.pop_section(), nodes.entry):
+                    pass           # </entry>
 
             self._current_cell[1] = col
             node_entry = nodes.entry() # <entry>
