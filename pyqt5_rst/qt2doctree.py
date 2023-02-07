@@ -133,6 +133,7 @@ class Qt2Doctree:
                 qt5_table = cursor.currentTable()
                 if qt5_table:
                     if not self._active_table:
+                        self.normalise_indentation(block_indent)
                         self._active_table = TableBuilder(self, qt5_table)
                     self._active_table.update(qt5_table, cursor)
                 elif self._active_table:
@@ -153,10 +154,7 @@ class Qt2Doctree:
                     raise SkipText
 
                 else:
-                    while block_indent < self._indentation_stack[-1]:
-                        if self.current_section_is_quote:
-                            self.pop_section()
-                        self._indentation_stack.pop()
+                    self.normalise_indentation(block_indent)
 
                     if level > 0:
                         # This block is a section header
@@ -211,6 +209,12 @@ class Qt2Doctree:
             return nodes.strong(text=text_segment)
 
         return nodes.Text(text_segment)
+
+    def normalise_indentation(self, current_indent):
+        while current_indent < self._indentation_stack[-1]:
+            if self.current_section_is_quote:
+                self.pop_section()
+            self._indentation_stack.pop()
 
     def pop_section(self):
         self._section_stack.pop()
