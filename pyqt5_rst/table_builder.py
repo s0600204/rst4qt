@@ -43,22 +43,19 @@ class TableBuilder:
         col = cell.column()
         row = cell.row()
 
-        if row != self._current_cell[0]:
-            if self._current_cell[0] != -1:
-                while not isinstance(self.pop_section(), nodes.entry):
-                    pass           # </entry>
-                self.pop_section() # </row>
-
-            self._current_cell[0] = row
-            self._current_cell[1] = -1
-            node_row = nodes.row() # <row>
-            self.append_node(node_row)
-            self.append_section(node_row)
-
         if col != self._current_cell[1]:
             if self._current_cell[1] != -1:
                 while not isinstance(self.pop_section(), nodes.entry):
                     pass           # </entry>
+
+            if row != self._current_cell[0]:
+                if self._current_cell[0] != -1:
+                    self.pop_section() # </row>
+
+                self._current_cell[0] = row
+                node_row = nodes.row() # <row>
+                self.append_node(node_row)
+                self.append_section(node_row)
 
             self._current_cell[1] = col
             node_entry = nodes.entry() # <entry>
