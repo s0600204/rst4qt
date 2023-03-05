@@ -32,6 +32,7 @@ class Doctree2Qt(GenericNodeVisitor):
         self._char_format_mono = QTextCharFormat()
 
         self._mono_font = QFontDatabase.systemFont(QFontDatabase.FixedFont)
+        self._mono_font.setStyleHint(QFont.Monospace)
         self._char_format_mono.setFont(self._mono_font)
 
         self._flags = {

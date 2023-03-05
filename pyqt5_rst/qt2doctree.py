@@ -16,7 +16,7 @@ class NextIteration(Exception):
 
 
 def is_monospace_formatted(text_format):
-    return text_format.font().family() == 'monospace'
+    return text_format.font().styleHint() == QFont.Monospace
 
 
 class Qt2Doctree:
