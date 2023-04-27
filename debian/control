@@ -1,0 +1,28 @@
+Source: rst2qt5
+Section: python
+Priority: optional
+Maintainer: s0600204 <dev@s0600204>
+Rules-Requires-Root: no
+Build-Depends:
+ debhelper-compat (= 13),
+ pybuild-plugin-pyproject,
+ python3-all,
+ python3-pyqt5,
+ python3-rst2rst (>> 0.4),
+ python3-setuptools
+Standards-Version: 4.6.2
+Homepage: https://github.com/s0600204/rst2qt5.git
+
+Package: python3-pyqt5-rst
+Architecture: all
+Depends:
+ ${misc:Depends},
+ ${python3:Depends}
+Description: reStructuredText support in PyQt5
+ Provides:
+ .
+ * QRstTextDocument - functionally identical to QTextDocument, but with the
+   added ability to get and set the textual content as reStructuredText.
+ .
+ * QRstTextEdit - functionally identical to QTextEdit, but with the added
+   ability to get and set the textual content as reStructuredText.
