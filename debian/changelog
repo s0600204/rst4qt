@@ -1,3 +1,9 @@
+rst2qt5 (0.0.2) UNRELEASED; urgency=medium
+
+  * Update to 0.0.2
+
+ -- s0600204 <dev@s0600204>  Mon, 01 May 2023 15:48:40 +0100
+
 rst2qt5 (0.0.1) UNRELEASED; urgency=medium
 
   * Initial packaging.
