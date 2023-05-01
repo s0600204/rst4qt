@@ -2,9 +2,14 @@
 # @see comment in .pylintrc for reason
 # pylint: disable=invalid-name
 
-from docutils.nodes import GenericNodeVisitor
+from docutils.nodes import (
+    GenericNodeVisitor,
+    SkipNode,
+)
 
 from PyQt5.QtGui import (
+    QFont,
+    QFontDatabase,
     QTextBlockFormat,
     QTextCharFormat,
     QTextCursor,
@@ -12,12 +17,9 @@ from PyQt5.QtGui import (
 
 class Doctree2Qt(GenericNodeVisitor):
 
-    BoldWeight = 75
-    NormalWeight = 50
+    HeadingSizeMagic = 4
 
     NoOpTags = (
-        'definition_list',
-        'definition_list_item',
         'document',
     )
 
@@ -26,15 +28,17 @@ class Doctree2Qt(GenericNodeVisitor):
 
         self._qt5_document = qt5_document
         self._cursor = QTextCursor(qt5_document)
+        self._char_format = QTextCharFormat()
+        self._char_format_mono = QTextCharFormat()
+
+        self._mono_font = QFontDatabase.systemFont(QFontDatabase.FixedFont)
+        self._mono_font.setStyleHint(QFont.Monospace)
+        self._char_format_mono.setFont(self._mono_font)
 
         self._flags = {
-            'bold': False,
-            'definition': False,
-            'italic': False,
-            'strike': False,
-            'underline': False,
         }
         self._section_level = 0
+        self._indentation_level = 0
 
     def default_visit(self, node):
         if node.tagname in self.NoOpTags:
@@ -44,11 +48,11 @@ class Doctree2Qt(GenericNodeVisitor):
     def default_departure(self, _):
         pass
 
-    def visit_definition(self, _):
-        self._flags['definition'] = True
+    def visit_block_quote(self, _):
+        self._indentation_level += 1
 
-    def depart_definition(self, _):
-        self._flags['definition'] = False
+    def depart_block_quote(self, _):
+        self._indentation_level -= 1
 
     def depart_document(self, _):
         # Remove empty block at top of created document.
@@ -58,29 +62,41 @@ class Doctree2Qt(GenericNodeVisitor):
         self._cursor.deletePreviousChar()
 
     def visit_emphasis(self, _):
-        self._flags['italic'] = True
+        self._char_format.setFontItalic(True)
 
     def depart_emphasis(self, _):
-        self._flags['italic'] = False
+        self._char_format.setFontItalic(False)
 
     def visit_inline(self, node):
         classes = node.get('classes', [])
         if 'strike' in classes:
-            self._flags['strike'] = True
+            self._char_format.setFontStrikeOut(True)
         if 'underline' in classes:
-            self._flags['under'] = True
+            self._char_format.setFontUnderline(True)
 
     def depart_inline(self, node):
         classes = node.get('classes', [])
         if 'strike' in classes:
-            self._flags['strike'] = False
+            self._char_format.setFontStrikeOut(False)
         if 'underline' in classes:
-            self._flags['under'] = False
+            self._char_format.setFontUnderline(False)
+
+    def visit_literal(self, node):
+        self._cursor.insertText(node.astext(), self._char_format_mono)
+        raise SkipNode
+
+    def visit_literal_block(self, node):
+        self._indentation_level += 1
+        # Create an indented block
+        self.visit_paragraph(node)
+
+        self._cursor.insertText(node.astext(), self._char_format_mono)
+        self._indentation_level -= 1
+        raise SkipNode
 
     def visit_paragraph(self, _):
         block_format = QTextBlockFormat()
-        if self._flags['definition']:
-            block_format.setIndent(1)
+        block_format.setIndent(self._indentation_level)
         self._cursor.insertBlock(block_format)
 
     def visit_section(self, _):
@@ -90,10 +106,10 @@ class Doctree2Qt(GenericNodeVisitor):
         self._section_level -= 1
 
     def visit_strong(self, _):
-        self._flags['bold'] = True
+        self._char_format.setFontWeight(QFont.Bold)
 
     def depart_strong(self, _):
-        self._flags['bold'] = False
+        self._char_format.setFontWeight(QFont.Normal)
 
     def visit_term(self, _):
         self._cursor.insertBlock()
@@ -101,12 +117,15 @@ class Doctree2Qt(GenericNodeVisitor):
     def visit_title(self, _):
         block_format = QTextBlockFormat()
         block_format.setHeadingLevel(self._section_level)
+
+        self._char_format.setProperty(
+            QTextCharFormat.FontSizeAdjustment,
+            self.HeadingSizeMagic - self._section_level)
+
         self._cursor.insertBlock(block_format)
 
+    def depart_title(self, _):
+        self._char_format = QTextCharFormat()
+
     def visit_Text(self, node):
-        char_format = QTextCharFormat()
-        char_format.setFontItalic(self._flags['italic'])
-        char_format.setFontStrikeOut(self._flags['strike'])
-        char_format.setFontUnderline(self._flags['underline'])
-        char_format.setFontWeight(self.BoldWeight if self._flags['bold'] else self.NormalWeight)
-        self._cursor.insertText(node.astext(), char_format)
+        self._cursor.insertText(node.astext().replace('\n', ' '), self._char_format)

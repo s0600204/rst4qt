@@ -4,10 +4,11 @@
 #   files/folders/modules differently, but that is not possible (currently).
 # pylint: disable=invalid-name
 
-from docutils.frontend import get_default_settings as docutils_get_default_settings
+from docutils.frontend import OptionParser as RstOptionParser
 from docutils.io import StringOutput as RstStringOutput
 from docutils.parsers.rst import Parser as RstParser
-from docutils.utils import new_document as new_rst_document
+from docutils.nodes import document as docutils_doctree
+from docutils.utils import new_document as new_docutils_doctree
 
 from rst2rst import Writer as RstWriter
 
@@ -18,18 +19,35 @@ from .qt2doctree import Qt2Doctree
 
 
 class QRstTextDocument(QTextDocument):
+    """
+    QRstTextDocument is functionally identical to QTextDocument, but with the
+    added ability to get and set the textual content as reStructuredText.
+
+    See the project's README for the scope of feature compatibility.
+    """
 
     def setReStructuredText(self, text: str):
+        """
+        Replaces the entire contents of the document with the given
+        reStructuredText-formatted text.
+
+        The undo/redo history is reset when this function is called.
+        """
         self.clear()
         self.clearUndoRedoStacks()
 
-        doctree = new_rst_document("<string>", docutils_get_default_settings(RstParser))
+        settings = RstOptionParser(components=(RstParser, )).get_default_values()
+        doctree = new_docutils_doctree("<string>", settings)
         RstParser().parse(text, doctree)
         doctree.walkabout(Doctree2Qt(doctree, self))
 
+    def toDocutilsDoctree(self) -> docutils_doctree:
+        """Returns a docutils doctree representation of the document."""
+        return Qt2Doctree().convert(self)
+
     def toReStructuredText(self) -> str:
-        doctree = Qt2Doctree().convert(self)
+        """Returns a string containing a reStructuredText representation of the document."""
         # We shouldn't *have* to set the encoding, but we do.
         rst_string = RstStringOutput(encoding='unicode')
-        RstWriter().write(doctree, rst_string)
+        RstWriter().write(self.toDocutilsDoctree(), rst_string)
         return rst_string.destination
