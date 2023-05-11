@@ -1,0 +1,68 @@
+version: 2.1
+
+jobs:
+
+  build:
+
+    docker:
+    - image: debian:bookworm-slim
+
+    resource_class: small
+
+    working_directory: /mnt/ramdisk
+
+    steps:
+
+    ## Pre-build setup
+    - run:
+        name: Configure Apt
+        # * Say "yes" automatically
+        # * Never want to install "Recommended" packages
+        command: |
+          echo 'APT::Get::Assume-Yes "true";'     > /etc/apt/apt.conf.d/AssumeYes
+          echo 'APT::Install-Recommends "false";' > /etc/apt/apt.conf.d/NeverRecommend
+    - run:
+        name: Update Apt
+        command: |
+          apt-get update && apt-get upgrade
+    - run:
+        name: Install build system dependencies
+        command: |
+          # For CircleCI
+          apt-get install git
+          # For debian
+          apt-get install build-essential debhelper devscripts git-buildpackage
+          # For this script
+          apt-get install curl
+    - run:
+        name: Add own Repository
+        command: |
+          curl -o /usr/share/keyrings/s06eye-keyring.gpg https://deb.s06eye.co.uk/repository.gpg
+          curl -o /etc/apt/sources.list.d/s06eye.list    https://deb.s06eye.co.uk/bookworm.list
+          apt-get update
+
+    ## Checkout code
+    - checkout
+    - run:
+        name: Switch branch
+        command: |
+          git checkout debian
+
+    ## Install build dependencies
+    - run:
+        name: Install build dependencies
+        command: |
+          DEPS_SCRIPT=./.circleci/dependencies.perl
+          git checkout circleci $DEPS_SCRIPT
+          apt-get install `$DEPS_SCRIPT | sed -e 's/([^)]*)//g' -e 's/,//g'`
+          git rm -f $DEPS_SCRIPT
+
+    ## Build
+    - run:
+        name: Build package
+        command: |
+          gbp buildpackage
+
+    ## Upload
+    - store_artifacts:
+        path: debian/build
