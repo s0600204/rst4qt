@@ -5,7 +5,7 @@ from docutils import (
     utils,
 )
 
-from PyQt5.QtGui import QFont
+from qtpy.QtGui import QFont
 
 
 class SkipText(Exception):
@@ -28,7 +28,7 @@ class Qt2Doctree:
 
         self._list_stack = []
 
-        # In Qt5, it's possible to indent more than once.
+        # In Qt, it's possible to indent more than once.
         self._indentation_stack = [0]
 
     @property
@@ -108,13 +108,13 @@ class Qt2Doctree:
     def continue_literal_block(self, block):
         self.append_text('\n')
 
-    def convert(self, qt5_document):
+    def convert(self, qt_document):
         doctree = utils.new_document("", frontend.get_default_settings())
 
         self._section_stack = [doctree]
         self._section_level_stack = [0]
 
-        block = qt5_document.firstBlock()
+        block = qt_document.firstBlock()
         while block.isValid():
             block_format = block.blockFormat()
             level = block_format.headingLevel()

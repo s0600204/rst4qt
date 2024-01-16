@@ -1,5 +1,5 @@
-reStructuredText support for Qt5
-================================
+reStructuredText support for Qt 5/6
+===================================
 
 Additional Roles
 ----------------
@@ -40,7 +40,7 @@ Strike Through
 
   .. role:: strike
 
-Referred to Qt5 as "strike out", this delineates where a horizontal line through
+Referred to Qt as "strike out", this delineates where a horizontal line through
 the vertical-middle of text should be drawn; and may be used thusly::
 
     Normal text :strike:`struck text` normal text
