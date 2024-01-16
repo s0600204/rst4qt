@@ -1,3 +1,10 @@
+rst4qt (0.1.0) UNRELEASED; urgency=medium
+
+  * Use qtpy instead of PyQt5 to permit usage with PyQt6, PySide2, PySide6
+  * Rename package from rst2qt5 to rst4qt
+
+ -- s0600204 <dev@s0600204>  Tue, 16 Jan 2024 20:56:00 +0000
+
 rst2qt5 (0.0.2) UNRELEASED; urgency=medium
 
   * Update to 0.0.2

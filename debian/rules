@@ -3,7 +3,7 @@
 # Output every command that modifies files on the build system.
 #export DH_VERBOSE = 1
 
-export PYBUILD_NAME=qt5_rst
+export PYBUILD_NAME=rst4qt
 
 %:
 	dh $@ --with python3 --buildsystem=pybuild
