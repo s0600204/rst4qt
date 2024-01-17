@@ -7,7 +7,7 @@ from docutils.nodes import (
     SkipNode,
 )
 
-from PyQt5.QtGui import (
+from qtpy.QtGui import (
     QFont,
     QFontDatabase,
     QTextBlockFormat,
@@ -23,11 +23,11 @@ class Doctree2Qt(GenericNodeVisitor):
         'document',
     )
 
-    def __init__(self, rst_document, qt5_document):
+    def __init__(self, rst_document, qt_document):
         super().__init__(rst_document)
 
-        self._qt5_document = qt5_document
-        self._cursor = QTextCursor(qt5_document)
+        self._qt_document = qt_document
+        self._cursor = QTextCursor(qt_document)
         self._char_format = QTextCharFormat()
         self._char_format_mono = QTextCharFormat()
 
