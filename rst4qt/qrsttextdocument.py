@@ -12,7 +12,7 @@ from docutils.utils import new_document as new_docutils_doctree
 
 from rst2rst import Writer as RstWriter
 
-from qtpy.QtGui import QTextDocument
+from qtpy.QtGui import QTextCursor, QTextDocument
 
 from .doctree2qt import Doctree2Qt
 from .qt2doctree import Qt2Doctree
@@ -34,12 +34,19 @@ class QRstTextDocument(QTextDocument):
         The undo/redo history is reset when this function is called.
         """
         self.clear()
-        self.clearUndoRedoStacks()
+        prevUndoRedoState = self.isUndoRedoEnabled()
+        self.setUndoRedoEnabled(False)
+        block = self.begin()
+        cursor = QTextCursor(block)
+        cursor.beginEditBlock()
 
         settings = RstOptionParser(components=(RstParser, )).get_default_values()
         doctree = new_docutils_doctree("<string>", settings)
         RstParser().parse(text, doctree)
         doctree.walkabout(Doctree2Qt(doctree, self))
+
+        cursor.endEditBlock()
+        self.setUndoRedoEnabled(prevUndoRedoState)
 
     def toDocutilsDoctree(self) -> docutils_doctree:
         """Returns a docutils doctree representation of the document."""
