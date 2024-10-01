@@ -1,3 +1,12 @@
+rst4qt (0.2.0) UNRELEASED; urgency=medium
+
+  * Vastly speed up the `setReStructuredText()` method
+    (~2.1s to <0.5s on ArchLinux; ~58.8s to ~0.6s on MSys2)
+  * Avoid https://xkcd.com/2109/
+  * Improve reporting unsupported tags and system messages
+
+ -- s0600204 <dev@s0600204>  Tue, 01 Oct 2024 19:50:00 +0100
+
 rst4qt (0.1.0) UNRELEASED; urgency=medium
 
   * Use qtpy instead of PyQt5 to permit usage with PyQt6, PySide2, PySide6
