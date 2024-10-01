@@ -2,6 +2,8 @@
 # @see comment in .pylintrc for reason
 # pylint: disable=invalid-name
 
+from textwrap import indent
+
 from docutils.nodes import (
     GenericNodeVisitor,
     SkipNode,
@@ -43,7 +45,14 @@ class Doctree2Qt(GenericNodeVisitor):
     def default_visit(self, node):
         if node.tagname in self.NoOpTags:
             return
-        print(f"Unhandled tag: {node.tagname}")
+        if node.tagname == "system_message":
+            print(node.astext())
+            return
+        if not node.line:
+            msg = indent(node.astext(), "~ ")
+            print(f"Unhandled tag: {node.tagname}\n{msg}")
+            return
+        print(f"Unhandled tag: {node.tagname} ({node.line})")
 
     def default_departure(self, _):
         pass
