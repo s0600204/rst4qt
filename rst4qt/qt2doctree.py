@@ -61,11 +61,19 @@ class Qt2Doctree:
             return
 
         if text_format:
-            text_node = self.format_text_segment(text, text_format)
-        else:
-            text_node = nodes.Text(text)
+            pre = text[:-len(text.lstrip())]
+            if pre:
+                self.current_node.append(nodes.Text(pre))
 
-        self.current_node.append(text_node)
+            text_segment = text.strip()
+            if text_segment:
+                self.current_node.append(self.format_text_segment(text_segment, text_format))
+
+            post = text[len(text.rstrip()):]
+            if post:
+                self.current_node.append(nodes.Text(post))
+        else:
+            self.current_node.append(nodes.Text(text))
 
     def append_text_from_block(self, block):
         text = block.text()
